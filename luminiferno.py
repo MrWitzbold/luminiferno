@@ -61,7 +61,7 @@ def zone(coordinate):
     for zone in zone_items_took:
         if zone[0] == coordinate:
             items_took.append(zone[1])
-    for i in range(len(items_available)-1):
+    for i in range(len(items_available)):
         item = items_available[i]
         if item.name not in items_took:
             if i != len(items_available)-1:
@@ -80,10 +80,12 @@ def execute_command(command):
         print("walk {direction 1 to 10} {amount of steps}")
         print("(backwards) walkb {direction 1 to 10} {amount of steps}")
         print("take {Item name}")
+        print("all {show all player stats}")
         print("inv - displays inventory")
         print("throw {item name} - throws away every item with that name")
         print("conjunction {item name} {item name}")
         print("distill {item name}")
+        print("equip {item name}")
 
     if command == "create_character":
         print("\n\nYou are creating your character")
@@ -102,13 +104,6 @@ def execute_command(command):
         else:
             player.coordinate[int(direction)-1] -= int(amount)
             print("You walked " + amount + " steps away from " + directions[int(direction)-1])
-
-    if command.startswith("check") and player != 0:
-        print("\nYou have " + str(player.health) + " health")
-        print("You have the {" + str(player.weapon) + "} weapon equippted.")
-        print("You have the {" + str(player.item) + "} item equippted.")
-        print("You have the {" + str(player.armor) + "} armor equippted.")
-        print("You have the following items: " + str((player.inventory)))
 
     if command.startswith("take") and player != 0:
         items_available = get_items(player.coordinate)
@@ -186,6 +181,60 @@ def execute_command(command):
                                 player.inventory.append(item)
                             if item.name == combination[1]:
                                 player.inventory.append(item)
+    
+    if command.startswith("all") and player!= 0:
+        print("\n~====================================================~")
+        print("\nYou have the following stats:")
+        print("Name: " + player.name)
+        print("Health: " + str(player.health))
+        if player.weapon != "":
+            print("Weapon: " + str(player.weapon.name))
+        if player.item != "":
+            print("Item: " + str(player.item.name))
+        armor_str = ""
+        for i in range(0, len(player.armor)):
+            armor = player.armor[i]
+            if i!= len(player.armor)-1:
+                armor_str += item.name + ", "
+            else:
+                armor_str += item.name
+        print("Armor: " + armor_str)
+        items_str = ""
+        for i in range(0, len(player.inventory)):
+            item = player.inventory[i]
+            if i!= len(player.inventory)-1:
+                items_str += item.name + ", "
+            else:
+                items_str += item.name
+        print("Inventory: " + items_str)
+        print("\n~====================================================~")
+
+    if command.startswith("equip") and player!= 0:
+        item_name = command.split(" ")[1]
+        found = False
+        for item in lumilib.items:
+            if item_name == item.name:
+                for playeritem in player.inventory:
+                    if playeritem.name == item.name:
+                        found = True
+                        if item.type == "weapon":
+                            if player.weapon != "":
+                                player.inventory.append(player.weapon)
+                            player.weapon = item
+                            player.inventory.remove(playeritem)
+                        else:
+                            if item.type == "armor":
+                                player.armor.append(item)
+                                player.inventory.remove(playeritem)
+                            else:
+                                if player.item != "":
+                                    player.inventory.append(player.item)
+                                player.item = item
+                                player.inventory.remove(playeritem)
+
+        if found == False:
+            print("This isn't an item in your inventory.")
+
 
 
 while True:
